@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="assets/css/style.css">
+	<script src="https://www.gstatic.com/firebasejs/live/3.0/firebase.js"></script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="jumbotron">
+					<h1>Rock Paper Scissors</h1>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-xs-3">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h3>Player 1</h3>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<form class="form-group">
+								<div class="input-group">
+									<input class="form-control pull-left" type="text" placeholder="Enter Name">
+									<span class="input-group-btn">
+										<button class="btn btn-info" id="submit-name">Submit</button>
+									</span>
+								</div>
+							</form>
+						</div>
+						<div class="row">
+							<div class="center-block">
+								<h5>Select:</h5>
+							</div>
+							<div class="center-block">
+								<button class="btn btn-info btn-rps">
+									<img src="assets/images/rock.png" width="100%" alt="rock">
+									<h5>Rock</h5>
+								</button>
+								<button class="btn btn-info btn-rps">
+									<img src="assets/images/paper.png" width="100%" alt="paper">
+									<h5>Paper</h5>
+								</button>
+								<button class="btn btn-info btn-rps">
+									<img src="assets/images/scissors.png" width="100%" alt="scissors">
+									<h5>Scissors</h5>
+								</button>
+							</div>
+						</div>
+					</div>
+					<div class="panel-footer score">
+						<div class="col-xs-6">
+							<span class="panel">
+								<h5>Wins</h5>
+								<h3 class="wins">0</h3>
+							</span>
+						</div>
+
+						<span class="panel">
+							<h5>Losses</h5>
+							<h3 class="losses">0</h3>
+						</span>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-6">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h3>Chat Window</h3>
+					</div>
+					<div class="panel-body">
+						<div class="msg-window"></div>
+					</div>
+					<div class="panel-footer">
+						<form class="form-group">
+							<div class="input-group">
+								<input type="text" class="form-control pull-left" placeholder="Enter message">
+								<span class="input-group-btn">
+									<button class="btn btn-info" id="submit-msg">Submit</button>
+								</span>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-xs-3">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<h3>Player 2</h3>
+					</div>
+					<div class="panel-body">
+						<div class="row">
+							<form class="form-group">
+								<div class="input-group">
+									<input class="form-control pull-left" type="text" placeholder="Enter Name">
+									<span class="input-group-btn">
+										<button class="btn btn-info" id="submit-name">Submit</button>
+									</span>
+								</div>
+							</form>
+						</div>
+						<div class="row">
+							<div class="center-block">
+								<h5>Select:</h5>
+							</div>
+							<div class="center-block">
+								<button class="btn btn-info">
+									<img src="assets/images/rock.png" height="50px" alt="rock">
+									<h5>Rock</h5>
+								</button>
+								<button class="btn btn-info">
+									<img src="assets/images/paper.png" height="50px" alt="paper">
+									<h5>Paper</h5>
+								</button>
+								<button class="btn btn-info">
+									<img src="assets/images/scissors.png" height="50px" alt="scissors">
+									<h5>Scissors</h5>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+</body>
+</html>

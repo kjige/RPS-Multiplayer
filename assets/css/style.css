@@ -1,0 +1,23 @@
+.msg-window {
+	min-height: 300px;
+}
+
+.center-block {
+	display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+}
+
+.btn-rps {
+	max-width: 30%;
+}
+
+@include media-breakpoint-up(xs) {
+  .btn-rps {
+    font-size: 12px;
+  }
+}
+
+.score {
+	text-align: center;
+}
