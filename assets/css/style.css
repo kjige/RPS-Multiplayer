@@ -1,23 +1,43 @@
-.msg-window {
-	min-height: 300px;
+.game-content {
+	display: flex;
+}
+
+.chat, .player {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.panel-body, .msg-window {
+	height: 100%;
+}
+
+.jumbotron {
+	text-align: center;
 }
 
 .center-block {
 	display: flex;
     justify-content: space-around;
-    align-items: stretch;
 }
 
 .btn-rps {
 	max-width: 30%;
-}
-
-@include media-breakpoint-up(xs) {
-  .btn-rps {
-    font-size: 12px;
-  }
+	padding: 0;
 }
 
 .score {
 	text-align: center;
+}
+
+@media only screen and (min-width: 992px) {
+  .btn-rps h5 {
+    font-size: 14px;
+  }
+}
+
+@media only screen and (max-width: 375px) {
+  .btn-rps h5 {
+    font-size: 8px;
+  }
 }
