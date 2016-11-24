@@ -50,6 +50,12 @@ $(document).ready(function () {
         if (a === 1) {
             // saves player 1's name
             p1Name = $('.name-' + a).val().trim();
+            db.ref('player1').set({
+                Name: p1Name,
+                Pick: "",
+                Wins: 0,
+                Losses: 0
+            });
             // hides player 1's form after submitting name
             $('.form-1').hide();
         }
@@ -57,6 +63,12 @@ $(document).ready(function () {
         if (a === 2) {
             // saves player 2's name
             p2Name = $('.name-' + a).val().trim();
+            db.ref('player2').set({
+                Name: p2Name,
+                Pick: "",
+                Wins: 0,
+                Losses: 0
+            });
             // hides player 2's form after submitting name
             $('.form-2').hide();
         }
@@ -83,6 +95,7 @@ $(document).ready(function () {
             if (player === 1) {
                 // store player 1's move
                 p1Pick = picked;
+                db.ref('player1/Pick').set(p1Pick);
                 // set flag to false after player 1's move
                 p1Set = false;
             }
@@ -92,6 +105,7 @@ $(document).ready(function () {
             if (player === 2) {
                 // store player 2's move
                 p2Pick = picked;
+                db.ref('player2/Pick').set(p2Pick);
                 // set flag to false after player 2's move
                 p2Set = false;
             }
@@ -100,7 +114,10 @@ $(document).ready(function () {
     }
 
     function checkWinner() {
-
+        if (p1Pick === p2Pick) {
+            result = tie;
+        }
+        if (p1Pick === 'r' && p2Pick === 'p') {}
     }
 
     function updateScore() {
