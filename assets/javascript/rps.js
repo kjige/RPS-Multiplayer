@@ -10,10 +10,22 @@ $(document).ready(function () {
     firebase.initializeApp(config);
 
     var db = firebase.database();
+    var players = db.ref('Players');
+    var names = db.ref('Names');
+    var picks = db.ref('Picks');
+    var wins = db.ref('Wins');
+    var losses = db.ref('Losses');
+
+    // player1 is present or not in game room
+    var p1Present = false;
+    // player2 is present or not in game room
+    var p2Present = false;
     // player 1's name
     var p1Name;
     // player 2's name
     var p2Name;
+    // data from RPS buttons
+    var button;
     // which player made a move
     var player;
     // what move did the player pick
@@ -23,9 +35,9 @@ $(document).ready(function () {
     // flag if the player 2 already made a move
     var p2Set = true;
     // what move did player 1 make
-    var p1Pick = 0;
+    var p1Pick = '';
     // what move did player 2 make
-    var p2Pick = 0;
+    var p2Pick = '';
     // result of the match
     var result;
     // player 1 wins
@@ -37,41 +49,86 @@ $(document).ready(function () {
     // player 2 losses
     var p2Losses;
 
+    whichPlayerPresent();
     // click event listener for name submit button
     $('.submit-name').on('click', addPlayerName);
     // click event listener for players' move
     $('.btn-rps').on('click', getData);
 
-    // captures players' names to var
+    // check which player is present in the game room
+    function whichPlayerPresent() {
+        players.once('value', function (snapshot) {
+            p1Present = snapshot.val().player1;
+            p2Present = snapshot.val().player2;
+            if (p1Present) {
+                hideForm1();
+            }
+            if (p2Present) {
+                hideForm2();
+            }
+            if (p1Present || p2Present) {
+                updateName1OnDOM();
+                updateName2OnDOM();
+            }
+        });
+    }
+
+    function hideForm1() {
+        $('.form-1').hide();
+    }
+
+    function hideForm2() {
+        $('.form-2').hide();
+    }
+
+    // stores players' names
     function addPlayerName() {
         // determine which player submitted name
-        var a = $(this).data('player');
+        player = $(this).data('player');
         // if player 1 submitted
-        if (a === 1) {
+        if (player === 1) {
             // saves player 1's name
-            p1Name = $('.name-' + a).val().trim();
-            db.ref('player1').set({
-                Name: p1Name,
-                Pick: "",
-                Wins: 0,
-                Losses: 0
-            });
-            // hides player 1's form after submitting name
-            $('.form-1').hide();
+            p1Name = $('.name-1').val().trim();
+            // update firebase with player's values
+            db.ref('Names/player1').set(p1Name);
+            p1Present = true;
+            db.ref('Players/player1').set(p1Present);
+            whichPlayerPresent();
+            hideForm1();
+            hideForm2();
+            updateName1OnDOM();
         }
         // if player 2 submitted
-        if (a === 2) {
+        if (player === 2) {
             // saves player 2's name
-            p2Name = $('.name-' + a).val().trim();
-            db.ref('player2').set({
-                Name: p2Name,
-                Pick: "",
-                Wins: 0,
-                Losses: 0
-            });
-            // hides player 2's form after submitting name
-            $('.form-2').hide();
+            p2Name = $('.name-2').val().trim();
+            // update firebase with player's values
+            db.ref('Names/player2').set(p2Name);
+            p2Present = true;
+            db.ref('Players/player2').set(p2Present);
+            whichPlayerPresent();
+            hideForm1();
+            hideForm2();
+            updateName2OnDOM();
         }
+    }
+
+    // display player1's name on DOM
+    function updateName1OnDOM() {
+        db.ref('Names/player1').once('value', function (snapshot) {
+            p1Name = snapshot.val();
+            var a = $('<h3>').html(p1Name).addClass('center-block');
+            $('.player1-name').empty().append(a);
+        });
+    }
+
+    // display player1's name on DOM
+    function updateName2OnDOM() {
+        db.ref('Names/player2').once('value', function (snapshot) {
+            p2Name = snapshot.val();
+            var a = $('<h3>').html(p2Name).addClass('center-block');
+            $('.player2-name').empty().append(a);
+        });
     }
 
     function resetScore() {
@@ -82,7 +139,7 @@ $(document).ready(function () {
     function getData() {
         var a = $(this).data('pick');
         // determines which player made this move
-        player = parseInt(a.slice(-1));
+        button = a.slice(-1);
         // determines what move this player made
         picked = a.slice(0, 1);
         updatePicks();
@@ -90,32 +147,28 @@ $(document).ready(function () {
 
     // store players' moves
     function updatePicks() {
-        // check if player 1 already made a move
-        if (p1Set) {
-            if (player === 1) {
-                // store player 1's move
-                p1Pick = picked;
-                db.ref('player1/Pick').set(p1Pick);
-                // set flag to false after player 1's move
-                p1Set = false;
-            }
+        // check if player 1 is making a move and pressing the right keys
+        if (player === 1 && button === 1) {
+            // store player 1's move in firebase
+            db.ref('Picks/player1').set(picked);
         }
-        // check if player 2 already made a move
-        if (p2Set) {
-            if (player === 2) {
-                // store player 2's move
-                p2Pick = picked;
-                db.ref('player2/Pick').set(p2Pick);
-                // set flag to false after player 2's move
-                p2Set = false;
-            }
+        // check if player 2 is making a move and pressing the right keys
+        if (player === 2 && button === 2) {
+            // store player 2's move in firebase
+            db.ref('Picks/player2').set(picked);
         }
-        checkWinner();
+    }
+
+    // check if both players made their moves
+    function checkMoves() {
+        if (db.ref('player1/Pick').exists() && db.ref('player2/Pick').exists()) {
+
+        }
     }
 
     function checkWinner() {
         if (p1Pick === p2Pick) {
-            result = tie;
+            result = 'tie';
         }
         if (p1Pick === 'r' && p2Pick === 'p') {}
     }
