@@ -44,31 +44,32 @@ $(document).ready(function () {
     // when player disconnects, remove player and name from those lists
     connection.on('value', function (snapshot) {
         console.log(snapshot.val());
-        if (snapshot.val() === false) {
-            if (db.ref('Keys/' + con) === 1) {
+        // if (!snapshot.val()) {
+        db.ref('Keys/' + con).once('value', function () {
+            if (snapshot.val() === 1) {
                 console.log('con false1');
-
                 db.ref('Names/player1').onDisconnect().remove();
-                db.ref('Players/' + name).remove();
-                db.ref('Picks/player1').remove();
-                db.ref('Wins/player1').remove();
-                db.ref('Losses/player1').remove();
-            } else if (db.ref('Keys/' + con).push().key === 2) {
+                db.ref('Players/' + name).onDisconnect().remove();
+                db.ref('Picks/player1').onDisconnect().remove();
+                db.ref('Wins/player1').onDisconnect().remove();
+                db.ref('Losses/player1').onDisconnect().remove();
+            } else if (snapshot.val() === 2) {
                 console.log('con false2');
-
-                db.ref('Names/player2').remove();
-                db.ref('Players/' + name).remove();
-                db.ref('Picks/player2').remove();
-                db.ref('Wins/player2').remove();
-                db.ref('Losses/player2').remove();
+                db.ref('Names/player2').onDisconnect().remove();
+                db.ref('Players/' + name).onDisconnect().remove();
+                db.ref('Picks/player2').onDisconnect().remove();
+                db.ref('Wins/player2').onDisconnect().remove();
+                db.ref('Losses/player2').onDisconnect().remove();
             }
-            if (db.ref().push().key === 1) {
-                whenPlayer1Disconnects();
-            } else if (db.ref().push().key === 2) {
-                whenPlayer2Disconnects();
-            }
+        });
+        if (db.ref().push().key === 1) {
+            whenPlayer1Disconnects();
+        } else if (db.ref().push().key === 2) {
+            whenPlayer2Disconnects();
         }
+        // }
     });
+
     db.ref('Keys/' + con).onDisconnect(function (snapshot) {
         if (snapshot.val() === 1) {
             console.log('con false1');
@@ -347,6 +348,7 @@ $(document).ready(function () {
         db.ref('Names/player' + player).once('value', function (snapshot) {
             db.ref('Messages').push().set(snapshot.val() + '\: ' + msg);
         });
+        $('.msg').empty();
     }
 
     db.ref('Messages').on('child_added', function (snapshot) {
@@ -356,8 +358,13 @@ $(document).ready(function () {
         // var a = $('<div>').html(e);
         // var ts = firebase.database.ServerValue.TIMESTAMP;
         // console.log(firebase.database.ServerValue.TIMESTAMP);
-
-        $('.msg-window').append($('<div>').html(e));
+        var nt = new Date();
+        var hours = nt.getHours();
+        var mins = nt.getMinutes();
+        var secs = nt.getSeconds();
+        var time = '\(' + hours + ':' + mins + ':' + secs + '\) ' + e;
+        // console.log(time);
+        $('.msg-window').append($('<div>').html(time));
         // }
     });
 });
