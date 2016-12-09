@@ -10,8 +10,8 @@ $(document).ready(function () {
     firebase.initializeApp(config);
 
     var db = firebase.database();
-    var playerRef = db.ref().push().key;
-    // console.log(con);
+    var con = db.ref().push().key;
+    console.log(con);
     // var players = db.ref('Players');
     // var names = db.ref('Names');
     // var picks = db.ref('Picks');
@@ -26,7 +26,6 @@ $(document).ready(function () {
     var player = 0; // user is this player number
     var opponent = 0;
     var picked = 0; // what move did the player pick
-    var opponentRef = [];
     var opponentPicked = 0;
     var p1Set = true; // flag if the player 1 already made a move
     var p2Set = true; // flag if the player 2 already made a move
@@ -43,107 +42,107 @@ $(document).ready(function () {
     var connection = db.ref('.info/connected'); // check client's connection status to firebase
 
     // when player disconnects, remove player and name from those lists
-    // connection.on('value', function (snapshot) {
-    //     console.log(snapshot.val());
-    //     // if (!snapshot.val()) {
-    //     db.ref('Keys/' + con).once('value', function () {
-    //         if (snapshot.val() === 1) {
-    //             console.log('con false1');
-    //             db.ref('Names/player1').onDisconnect().remove();
-    //             db.ref('Players/' + name).onDisconnect().remove();
-    //             db.ref('Picks/player1').onDisconnect().remove();
-    //             db.ref('Wins/player1').onDisconnect().remove();
-    //             db.ref('Losses/player1').onDisconnect().remove();
-    //         } else if (snapshot.val() === 2) {
-    //             console.log('con false2');
-    //             db.ref('Names/player2').onDisconnect().remove();
-    //             db.ref('Players/' + name).onDisconnect().remove();
-    //             db.ref('Picks/player2').onDisconnect().remove();
-    //             db.ref('Wins/player2').onDisconnect().remove();
-    //             db.ref('Losses/player2').onDisconnect().remove();
-    //         }
-    //     });
-    //     if (db.ref().push().key === 1) {
-    //         whenPlayer1Disconnects();
-    //     } else if (db.ref().push().key === 2) {
-    //         whenPlayer2Disconnects();
-    //     }
-    //     // }
-    // });
-
-    db.ref(playerRef).onDisconnect().remove();
-
-    db.ref('Keys').on('value', function (snapshot) {
-        for (var key in snapshot.val()) {
-            if (snapshot.val().key !== player) {
-                opponentRef = snapshot.val().key;
-                console.log('oppref\:' + opponentRef);
-                // console.log('playerref\:' + playerRef);
+    connection.on('value', function (snapshot) {
+        console.log(snapshot.val());
+        // if (!snapshot.val()) {
+        db.ref('Keys/' + con).once('value', function () {
+            if (snapshot.val() === 1) {
+                console.log('con false1');
+                db.ref('Names/player1').onDisconnect().remove();
+                db.ref('Players/' + name).onDisconnect().remove();
+                db.ref('Picks/player1').onDisconnect().remove();
+                db.ref('Wins/player1').onDisconnect().remove();
+                db.ref('Losses/player1').onDisconnect().remove();
+            } else if (snapshot.val() === 2) {
+                console.log('con false2');
+                db.ref('Names/player2').onDisconnect().remove();
+                db.ref('Players/' + name).onDisconnect().remove();
+                db.ref('Picks/player2').onDisconnect().remove();
+                db.ref('Wins/player2').onDisconnect().remove();
+                db.ref('Losses/player2').onDisconnect().remove();
             }
+        });
+        if (db.ref().push().key === 1) {
+            whenPlayer1Disconnects();
+        } else if (db.ref().push().key === 2) {
+            whenPlayer2Disconnects();
+        }
+        // }
+    });
+
+    db.ref('Names').onDisconnect().remove();
+    db.ref('Messages').onDisconnect().remove();
+    db.ref('Players').onDisconnect().remove();
+
+    db.ref('Keys/' + con).onDisconnect(function (snapshot) {
+        if (snapshot.val() === 1) {
+            console.log('con false1');
+            db.ref('Names/player1').remove();
+            db.ref('Players/' + name).remove();
+            db.ref('Picks/player1').remove();
+            db.ref('Wins/player1').remove();
+            db.ref('Losses/player1').remove();
+        } else if (snapshot.val() === 2) {
+            console.log('con false2');
+            db.ref('Names/player2').remove();
+            db.ref('Players/' + name).remove();
+            db.ref('Picks/player2').remove();
+            db.ref('Wins/player2').remove();
+            db.ref('Losses/player2').remove();
         }
     });
+
+    function whenPlayer1Disconnects() {
+        // db.ref('Names/player1').onDisconnect().remove();
+        // db.ref('Players/' + name).onDisconnect().remove();
+        // db.ref('Wins/player1').onDisconnect().set(0);
+        // db.ref('Losses/player1').onDisconnect().set(0);
+        // $('.form-1').html('Disonnected!');
+        db.ref('Names/player1').onDisconnect().remove();
+        db.ref('Players/' + name).onDisconnect().remove();
+        db.ref('Picks/player1').onDisconnect().remove();
+        db.ref('Wins/player1').onDisconnect().remove();
+        db.ref('Losses/player1').onDisconnect().remove();
+    }
+
+    function whenPlayer2Disconnects() {
+        // db.ref('Names/player2').onDisconnect().remove();
+        // db.ref('Players/' + name).onDisconnect().remove();
+        // db.ref('Wins/player2').onDisconnect().set(0);
+        // db.ref('Losses/player2').onDisconnect().set(0);
+        db.ref('Names/player2').onDisconnect().remove();
+        db.ref('Players/' + name).onDisconnect().remove();
+        db.ref('Picks/player2').onDisconnect().remove();
+        db.ref('Wins/player2').onDisconnect().remove();
+        db.ref('Losses/player2').onDisconnect().remove();
+    }
+
 
     // listen for players' moves
-    db.ref(opponentRef + '/Pick').on('value', function (snapshot) {
-        opponentPicked = snapshot.val();
-        checkMoves();
-    });
-
-    // db.ref(opponentRef + '/Pick').on('value', function (snapshot) {
-    //     if (snapshot.val() !== null) {
-    //         opponentPicked = snapshot.val();
-    //         checkMoves();
-    //     }
-    // });
-
-    db.ref('Names/player1').on('value', function (snapshot) {
-        if (snapshot.val()) {
-            updateName1OnDOM();
+    db.ref('Picks/player' + player).on('value', function (snapshot) {
+        // console.log('db');
+        if (snapshot.val() !== null) {
+            picked = snapshot.val();
+            console.log('picked ' + picked);
+            console.log(picked.length);
+            checkMoves();
         }
     });
 
-    db.ref('Names/player2').on('value', function (snapshot) {
-        if (snapshot.val()) {
-            updateName2OnDOM();
+    db.ref('Picks/player' + opponent).on('value', function (snapshot) {
+        // console.log('db2');
+        if (snapshot.val() !== null) {
+            opponentPicked = snapshot.val();
+            console.log('opponentPicked ' + opponentPicked);
+            console.log(opponentPicked.length);
+            checkMoves();
         }
     });
 
+    // checkPlayerPresentFirebase();
     // click event listener for name submit button
     $(document).on('click', '.submit-name', addPlayer);
 
-    function addPlayer() {
-        player = $(this).data('player'); // determine which player submitted name
-        if (player === 1) {
-            opponent = 2;
-        } else if (player === 2) {
-            opponent = 1;
-        }
-        name = $('.name-' + player).val().trim(); // store player's name from input box
-        $('.name-' + player).empty();
-        var a = {};
-        a[playerRef] = player;
-        db.ref('Keys/' + playerRef).set(player);
-        db.ref(playerRef + '/Name').set(name);
-        db.ref(playerRef + '/Player').set(player);
-        db.ref(playerRef + '/Wins').set(0);
-        db.ref(playerRef + '/Losses').set(0);
-        db.ref(playerRef + '/Pick').set('');
-        db.ref(playerRef + '/Messages').set('Online');
-        // db.ref('Keys/' + con).set(player);
-        // console.log('player' + player);
-        // console.log('opponent' + opponent);
-        // db.ref('Names/player' + player).set(name); // update firebase with player's values
-        // db.ref('Players/' + name).set('player' + player); // mark player as present in firebase
-        // db.ref('Wins/player' + player).set(0); // reset wins to 0
-        // db.ref('Losses/player' + player).set(0); // reset losses to 0
-        // db.ref('Picks/player' + player).set(''); // reset picks
-        // checkPresentPlayer();
-        hideForm1();
-        hideForm2();
-        updateName1OnDOM();
-        updateName2OnDOM();
-        clickForRPS();
-    }
     // click event listener for players' move
     function clickForRPS() {
         $(document).off('click', '.btn-rps').on('click', '.btn-rps', savePlayerMove);
@@ -178,22 +177,64 @@ $(document).ready(function () {
         $('.form-2').hide();
     }
 
-
+    function addPlayer() {
+        player = $(this).data('player'); // determine which player submitted name
+        if (player === 1) {
+            opponent = 2;
+        } else if (player === 2) {
+            opponent = 1;
+        }
+        var a = {};
+        a[con] = player;
+        db.ref('Keys/' + con).set(player);
+        console.log('player' + player);
+        console.log('opponent' + opponent);
+        name = $('.name-' + player).val().trim(); // store player's name from input box
+        db.ref('Names/player' + player).set(name); // update firebase with player's values
+        db.ref('Players/' + name).set('player' + player); // mark player as present in firebase
+        db.ref('Wins/player' + player).set(0); // reset wins to 0
+        db.ref('Losses/player' + player).set(0); // reset losses to 0
+        db.ref('Picks/player' + player).set(''); // reset picks
+        // checkPresentPlayer();
+        hideForm1();
+        hideForm2();
+        updateName1OnDOM();
+        updateName2OnDOM();
+        clickForRPS();
+    }
+    updateName1OnDOM();
+    updateName2OnDOM();
     // display player1's name on DOM
     function updateName1OnDOM() {
         db.ref('Names/player1').once('value', function (snapshot) {
             name = snapshot.val();
-            var a = $('<h3>').html(name).addClass('center-block');
-            $('.player1-name').empty().append(a);
+            if (name !== null) {
+                var a = $('<h3>').html(name).addClass('center-block');
+                $('.player1-name').empty().append(a);
+            }
         });
     }
+
+    db.ref('Names/player1').on('value', function (snapshot) {
+        if (snapshot.val()) {
+            updateName1OnDOM();
+        }
+    });
+
+    db.ref('Names/player2').on('value', function (snapshot) {
+        if (snapshot.val()) {
+            updateName2OnDOM();
+        }
+    });
 
     // display player2's name on DOM
     function updateName2OnDOM() {
         db.ref('Names/player2').once('value', function (snapshot) {
             name = snapshot.val();
-            var a = $('<h3>').html(name).addClass('center-block');
-            $('.player2-name').empty().append(a);
+            if (name !== null) {
+                var a = $('<h3>').html(name).addClass('center-block');
+                $('.player2-name').empty().append(a);
+            }
         });
     }
 
@@ -218,9 +259,9 @@ $(document).ready(function () {
     // check if both players made their moves
     function checkMoves() {
         // console.log('checkMoves1');
-        if (picked.length) {
+        if (picked.length !== null) {
             // console.log('checkMoves3');
-            if (opponentPicked.length) {
+            if (opponentPicked.length !== null) {
                 // console.log('checkMoves2');
                 checkWinner();
             }
@@ -310,6 +351,11 @@ $(document).ready(function () {
 
     }
     $('#submit-msg').off('click').on('click', submitMsg);
+    $("#submit-msg").keyup(function (event) {
+        if (event.keyCode === 13) {
+            submitMsg();
+        }
+    });
 
     function submitMsg() {
         var msg = $('.msg').val().trim();
