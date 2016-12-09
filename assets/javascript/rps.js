@@ -10,6 +10,8 @@ $(document).ready(function () {
     firebase.initializeApp(config);
 
     var db = firebase.database();
+    var con = db.ref().push().key;
+    console.log(con);
     // var players = db.ref('Players');
     // var names = db.ref('Names');
     // var picks = db.ref('Picks');
@@ -41,15 +43,75 @@ $(document).ready(function () {
 
     // when player disconnects, remove player and name from those lists
     connection.on('value', function (snapshot) {
-        if (!snapshot.val()) {
-            db.ref('Names/player' + player).remove();
-            db.ref('Players/' + name).remove();
-            db.ref('Picks/player' + player).remove();
-            db.ref('Wins/player' + player).remove();
-            db.ref('Losses/player' + player).remove();
+        console.log(snapshot.val());
+        if (snapshot.val() === false) {
+            if (db.ref('Keys/' + con) === 1) {
+                console.log('con false1');
+
+                db.ref('Names/player1').onDisconnect().remove();
+                db.ref('Players/' + name).remove();
+                db.ref('Picks/player1').remove();
+                db.ref('Wins/player1').remove();
+                db.ref('Losses/player1').remove();
+            } else if (db.ref('Keys/' + con).push().key === 2) {
+                console.log('con false2');
+
+                db.ref('Names/player2').remove();
+                db.ref('Players/' + name).remove();
+                db.ref('Picks/player2').remove();
+                db.ref('Wins/player2').remove();
+                db.ref('Losses/player2').remove();
+            }
+            if (db.ref().push().key === 1) {
+                whenPlayer1Disconnects();
+            } else if (db.ref().push().key === 2) {
+                whenPlayer2Disconnects();
+            }
         }
     });
-    db.ref('Names/' + name).onDisconnect().remove();
+    db.ref('Keys/' + con).onDisconnect(function (snapshot) {
+        if (snapshot.val() === 1) {
+            console.log('con false1');
+            db.ref('Names/player1').remove();
+            db.ref('Players/' + name).remove();
+            db.ref('Picks/player1').remove();
+            db.ref('Wins/player1').remove();
+            db.ref('Losses/player1').remove();
+        } else if (snapshot.val() === 2) {
+            console.log('con false2');
+            db.ref('Names/player2').remove();
+            db.ref('Players/' + name).remove();
+            db.ref('Picks/player2').remove();
+            db.ref('Wins/player2').remove();
+            db.ref('Losses/player2').remove();
+        }
+    });
+
+    function whenPlayer1Disconnects() {
+        // db.ref('Names/player1').onDisconnect().remove();
+        // db.ref('Players/' + name).onDisconnect().remove();
+        // db.ref('Wins/player1').onDisconnect().set(0);
+        // db.ref('Losses/player1').onDisconnect().set(0);
+        // $('.form-1').html('Disonnected!');
+        db.ref('Names/player1').onDisconnect().remove();
+        db.ref('Players/' + name).onDisconnect().remove();
+        db.ref('Picks/player1').onDisconnect().remove();
+        db.ref('Wins/player1').onDisconnect().remove();
+        db.ref('Losses/player1').onDisconnect().remove();
+    }
+
+    function whenPlayer2Disconnects() {
+        // db.ref('Names/player2').onDisconnect().remove();
+        // db.ref('Players/' + name).onDisconnect().remove();
+        // db.ref('Wins/player2').onDisconnect().set(0);
+        // db.ref('Losses/player2').onDisconnect().set(0);
+        db.ref('Names/player2').onDisconnect().remove();
+        db.ref('Players/' + name).onDisconnect().remove();
+        db.ref('Picks/player2').onDisconnect().remove();
+        db.ref('Wins/player2').onDisconnect().remove();
+        db.ref('Losses/player2').onDisconnect().remove();
+    }
+
 
     // listen for players' moves
     db.ref('Picks/player' + player).on('value', function (snapshot) {
@@ -117,6 +179,9 @@ $(document).ready(function () {
         } else if (player === 2) {
             opponent = 1;
         }
+        var a = {};
+        a[con] = player;
+        db.ref('Keys/' + con).set(player);
         console.log('player' + player);
         console.log('opponent' + opponent);
         name = $('.name-' + player).val().trim(); // store player's name from input box
@@ -275,4 +340,24 @@ $(document).ready(function () {
     function resetPicks() {
 
     }
+    $('#submit-msg').off('click').on('click', submitMsg);
+
+    function submitMsg() {
+        var msg = $('.msg').val().trim();
+        db.ref('Names/player' + player).once('value', function (snapshot) {
+            db.ref('Messages').push().set(snapshot.val() + '\: ' + msg);
+        });
+    }
+
+    db.ref('Messages').on('child_added', function (snapshot) {
+        console.log(snapshot.val());
+        var e = snapshot.val();
+        // for (var key in snapshot.val()) {
+        // var a = $('<div>').html(e);
+        // var ts = firebase.database.ServerValue.TIMESTAMP;
+        // console.log(firebase.database.ServerValue.TIMESTAMP);
+
+        $('.msg-window').append($('<div>').html(e));
+        // }
+    });
 });
