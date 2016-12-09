@@ -22,7 +22,9 @@ $(document).ready(function () {
     var name = ''; // player's name
     var button; // data from RPS buttons
     var player = 0; // user is this player number
-    var picked; // what move did the player pick
+    var opponent = 0;
+    var picked = 0; // what move did the player pick
+    var opponentPicked = 0;
     var p1Set = true; // flag if the player 1 already made a move
     var p2Set = true; // flag if the player 2 already made a move
     var p1Pick = ''; // what move did player 1 make
@@ -32,31 +34,53 @@ $(document).ready(function () {
     var p1Losses; // player 1 losses
     var p2Wins; // player 2 wins
     var p2Losses; // player 2 losses
+    var wins = 0;
+    var loss = 0;
 
     var connection = db.ref('.info/connected'); // check client's connection status to firebase
 
     // when player disconnects, remove player and name from those lists
     connection.on('value', function (snapshot) {
         if (!snapshot.val()) {
-            db.ref('Names/player' + player).set(0);
+            db.ref('Names/player' + player).remove();
             db.ref('Players/' + name).remove();
+            db.ref('Picks/player' + player).remove();
+            db.ref('Wins/player' + player).remove();
+            db.ref('Losses/player' + player).remove();
         }
     });
-    // db.ref('Names/' + name).onDisconnect().remove();
+    db.ref('Names/' + name).onDisconnect().remove();
 
     // listen for players' moves
-    db.ref('Picks/player1').on('value', function (snapshot) {
-        p1Pick = snapshot.val();
+    db.ref('Picks/player' + player).on('value', function (snapshot) {
+        // console.log('db');
+        if (snapshot.val() !== null) {
+            picked = snapshot.val();
+            console.log('picked ' + picked);
+            console.log(picked.length);
+            checkMoves();
+        }
     });
-    db.ref('Picks/player1').on('value', function (snapshot) {
-        p1Pick = snapshot.val();
+
+    db.ref('Picks/player' + opponent).on('value', function (snapshot) {
+        // console.log('db2');
+        if (snapshot.val() !== null) {
+            opponentPicked = snapshot.val();
+            console.log('opponentPicked ' + opponentPicked);
+            console.log(opponentPicked.length);
+            checkMoves();
+        }
     });
 
     // checkPlayerPresentFirebase();
     // click event listener for name submit button
     $(document).on('click', '.submit-name', addPlayer);
+
     // click event listener for players' move
-    $(document).on('click', '.btn-rps', savePlayerMove);
+    function clickForRPS() {
+        $(document).off('click', '.btn-rps').on('click', '.btn-rps', savePlayerMove);
+        // $(document).on('click', '.btn-rps', savePlayerMove);
+    }
 
     // check firebase for which player is present in room
     function checkPlayerPresentFirebase() {
@@ -86,9 +110,15 @@ $(document).ready(function () {
         $('.form-2').hide();
     }
 
-
     function addPlayer() {
         player = $(this).data('player'); // determine which player submitted name
+        if (player === 1) {
+            opponent = 2;
+        } else if (player === 2) {
+            opponent = 1;
+        }
+        console.log('player' + player);
+        console.log('opponent' + opponent);
         name = $('.name-' + player).val().trim(); // store player's name from input box
         db.ref('Names/player' + player).set(name); // update firebase with player's values
         db.ref('Players/' + name).set('player' + player); // mark player as present in firebase
@@ -100,6 +130,7 @@ $(document).ready(function () {
         hideForm2();
         updateName1OnDOM();
         updateName2OnDOM();
+        clickForRPS();
     }
 
     // display player1's name on DOM
@@ -112,13 +143,13 @@ $(document).ready(function () {
     }
 
     db.ref('Names/player1').on('value', function (snapshot) {
-        if (snapshot.val().length > 0) {
+        if (snapshot.val()) {
             updateName1OnDOM();
         }
     });
 
     db.ref('Names/player2').on('value', function (snapshot) {
-        if (snapshot.val().length > 0) {
+        if (snapshot.val()) {
             updateName2OnDOM();
         }
     });
@@ -138,30 +169,108 @@ $(document).ready(function () {
 
     // save player's move
     function savePlayerMove() {
+        clickForRPS();
         picked = $(this).data('pick');
         db.ref('Picks/player' + player).set(picked); // store player's move in firebase
-        checkMoves();
+        // console.log(picked);
+        db.ref('Picks/player' + opponent).on('value', function (snapshot) {
+            if (snapshot.val() !== null) {
+                opponentPicked = snapshot.val();
+                checkMoves();
+            }
+        });
     }
 
     // check if both players made their moves
     function checkMoves() {
-        p1Pick = db.ref('Picks/player1');
-        p2Pick = db.ref('Picks/player2');
-        if (p1Pick.length > 0 && p2Pick.length > 0) {
-            checkWinner();
+        // console.log('checkMoves1');
+        if (picked.length !== null) {
+            // console.log('checkMoves3');
+            if (opponentPicked.length !== null) {
+                // console.log('checkMoves2');
+                checkWinner();
+            }
         }
     }
 
     function checkWinner() {
-        if (p1Pick === p2Pick) {
+        console.log('running checkWinner');
+        if (picked === opponentPicked) {
             result = 'tie';
+            updateScore();
+        } else if (picked === 'rock' && opponentPicked === 'scissors') {
+            wins++;
+            console.log('picked+1');
+            updateScore();
+        } else if (picked === 'paper' && opponentPicked === 'rock') {
+            wins++;
+            console.log('picked+1');
+            updateScore();
+        } else if (picked === 'scissors' && opponentPicked === 'paper') {
+            wins++;
+            console.log('picked+1');
+            updateScore();
+        } else if (opponentPicked === 'rock' && picked === 'scissors') {
+            loss++;
+            console.log('opponentpicked+1');
+            updateScore();
+        } else if (opponentPicked === 'paper' && picked === 'rock') {
+            loss++;
+            console.log('opponentpicked+1');
+            updateScore();
+        } else if (opponentPicked === 'scissors' && picked === 'paper') {
+            loss++;
+            console.log('opponentpicked+1');
+            updateScore();
         }
-        if (p1Pick === 'r' && p2Pick === 'p') {}
     }
 
     function updateScore() {
-
+        db.ref('Wins/player' + player).set(wins);
+        // console.log('wins' + wins);
+        db.ref('Losses/player' + player).set(loss);
+        // console.log('losses' + loss);
+        // console.log('player' + player);
+        db.ref('Picks/player' + player).set('');
+        picked = '';
+        opponentPicked = '';
     }
+
+    db.ref('Wins/player1').on('value', function (snapshot) {
+        // p1Wins = snapshot.val();
+        // console.log('Wins/player' + player);
+        if (snapshot.val() !== null) {
+            // console.log('snapshot' + snapshot.val());
+            $('.p1-wins').html(snapshot.val());
+        }
+    });
+
+    db.ref('Wins/player2').on('value', function (snapshot) {
+        // p2Wins = snapshot.val();
+        // console.log('Wins/player' + opponent);
+        if (snapshot.val() !== null) {
+            // console.log('snapshot' + snapshot.val());
+            $('.p2-wins').html(snapshot.val());
+        }
+    });
+
+    db.ref('Losses/player1').on('value', function (snapshot) {
+        // p1Losses = snapshot.val();
+        // console.log('Losses/player' + player);
+        if (snapshot.val() !== null) {
+            // console.log('snapshot' + snapshot.val());
+            $('.p1-losses').html(snapshot.val());
+        }
+    });
+
+    db.ref('Losses/player2').on('value', function (snapshot) {
+        // p2Losses = snapshot.val();
+        // console.log('Losses/player' + opponent);
+        if (snapshot.val() !== null) {
+            // console.log('snapshot' + snapshot.val());
+            $('.p2-losses').html(snapshot.val());
+        }
+    });
 
     function resetPicks() {
 
