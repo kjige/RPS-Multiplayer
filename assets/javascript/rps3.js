@@ -83,33 +83,14 @@ $(document).ready(function () {
     // click event listener for players' move
     function clickForRPS() {
         $(document).off('click', '.btn-rps').on('click', '.btn-rps', savePlayerMove);
-        // $(document).on('click', '.btn-rps', savePlayerMove);
     }
 
-    // check firebase for which player is present in room
-    function checkPlayerPresentFirebase() {
-        players.once('value', function (snapshot) {
-            p1Present = snapshot.val().player1;
-            p2Present = snapshot.val().player2;
-        });
-        // checkPresentPlayer();
-    }
-
-    // check which player is present in the game room
-    function checkPresentPlayer() {
-        if (p1Present === true) {
-            hideForm1();
-            updateName1OnDOM();
-        } else if (p2Present === true) {
-            hideForm2();
-            updateName2OnDOM();
-        }
-    }
-
+    // hide player 1's form
     function hideForm1() {
         $('.form-1').hide();
     }
 
+    // hide player 2's form
     function hideForm2() {
         $('.form-2').hide();
     }
@@ -121,18 +102,12 @@ $(document).ready(function () {
         } else if (player === 2) {
             opponent = 1;
         }
-        var a = {};
-        a[con] = player;
-        db.ref('Keys/' + con).set(player);
-        console.log('player' + player);
-        console.log('opponent' + opponent);
         name = $('.name-' + player).val().trim(); // store player's name from input box
         db.ref('Names/player' + player).set(name); // update firebase with player's values
         db.ref('Players/' + name).set('player' + player); // mark player as present in firebase
         db.ref('Wins/player' + player).set(0); // reset wins to 0
         db.ref('Losses/player' + player).set(0); // reset losses to 0
         db.ref('Picks/player' + player).set(''); // reset picks
-        // checkPresentPlayer();
         hideForm1();
         hideForm2();
         updateName1OnDOM();
@@ -142,6 +117,7 @@ $(document).ready(function () {
 
     updateName1OnDOM();
     updateName2OnDOM();
+
     // display player1's name on DOM
     function updateName1OnDOM() {
         db.ref('Names/player1').once('value', function (snapshot) {
@@ -164,16 +140,11 @@ $(document).ready(function () {
         });
     }
 
-    function resetScore() {
-
-    }
-
     // save player's move
     function savePlayerMove() {
         clickForRPS();
         picked = $(this).data('pick');
         db.ref('Picks/player' + player).set(picked); // store player's move in firebase
-        // console.log(picked);
         db.ref('Picks/player' + opponent).on('value', function (snapshot) {
             if (snapshot.val() !== null) {
                 opponentPicked = snapshot.val();
@@ -184,11 +155,8 @@ $(document).ready(function () {
 
     // check if both players made their moves
     function checkMoves() {
-        // console.log('checkMoves1');
         if (picked.length !== null) {
-            // console.log('checkMoves3');
             if (opponentPicked.length !== null) {
-                // console.log('checkMoves2');
                 checkWinner();
             }
         }
@@ -228,47 +196,32 @@ $(document).ready(function () {
 
     function updateScore() {
         db.ref('Wins/player' + player).set(wins);
-        // console.log('wins' + wins);
         db.ref('Losses/player' + player).set(loss);
-        // console.log('losses' + loss);
-        // console.log('player' + player);
         db.ref('Picks/player' + player).set('');
         picked = '';
         opponentPicked = '';
     }
 
     db.ref('Wins/player1').on('value', function (snapshot) {
-        // p1Wins = snapshot.val();
-        // console.log('Wins/player' + player);
         if (snapshot.val() !== null) {
-            // console.log('snapshot' + snapshot.val());
             $('.p1-wins').html(snapshot.val());
         }
     });
 
     db.ref('Wins/player2').on('value', function (snapshot) {
-        // p2Wins = snapshot.val();
-        // console.log('Wins/player' + opponent);
         if (snapshot.val() !== null) {
-            // console.log('snapshot' + snapshot.val());
             $('.p2-wins').html(snapshot.val());
         }
     });
 
     db.ref('Losses/player1').on('value', function (snapshot) {
-        // p1Losses = snapshot.val();
-        // console.log('Losses/player' + player);
         if (snapshot.val() !== null) {
-            // console.log('snapshot' + snapshot.val());
             $('.p1-losses').html(snapshot.val());
         }
     });
 
     db.ref('Losses/player2').on('value', function (snapshot) {
-        // p2Losses = snapshot.val();
-        // console.log('Losses/player' + opponent);
         if (snapshot.val() !== null) {
-            // console.log('snapshot' + snapshot.val());
             $('.p2-losses').html(snapshot.val());
         }
     });
